@@ -1,6 +1,6 @@
 #define FUSE_USE_VERSION 30
 
-#include "fuse.h"
+#include "winfsp/fuse.h"
 #include<stdio.h>
 #include<unistd.h>
 #include<sys/types.h>
@@ -15,22 +15,12 @@
     // path: Path of the FILE whose attributes are required
     // st: Attributes of the FILE should be filled into this "stat" structure
 
-struct stat {
-    int st_uid;
-    int st_gid;
-    time_t st_atime;
-    time_t st_mtime;
-    size_t st_mode;
-    int st_nlink;
-    int st_size;
-};
-
 static int getAttributes (const char *path, struct stat *st) {
 
     // GNU's definitions of Attributes: http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html
 
     printf("Getting the Attributes of file %s \n", path);
-    st -> st_uid = getpid();        // User ID: Owner of the FILE (user who mounted the file system)
+    st -> st_uid = getuid();        // User ID: Owner of the FILE (user who mounted the file system)
     // st -> st_gid = getgid();        // Group ID: Owner Group of the FILE
     st -> st_atime = time(NULL);    // Last Access Time (in UNIX Time: seconds passed since 00:00:00 UTC, January 1, 1970)
     st -> st_mtime = time(NULL);    // Last Modification Time
