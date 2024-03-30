@@ -1,0 +1,85 @@
+
+
+
+
+GNU's definitions of Attributes: http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html
+
+
+
+
+
+struct fuse_operations:::
+
+1. `static struct fuse_operations operations = { ... };`:
+   - This line declares a static variable named `operations` of type `struct fuse_operations` and initializes it with values inside the curly braces `{}`.
+
+2. Inside the curly braces, there are three assignments:
+
+   a. `.getattr = getAttributes,`:
+      - This assigns the function `getAttributes` to the member `getattr` of the `fuse_operations` struct.
+      - In other words, when the FUSE library needs to get attributes (such as file size, permissions, etc.) of a file or directory, it will call the `getAttributes` function.
+
+   b. `.readdir = listDirectory,`:
+      - This assigns the function `listDirectory` to the member `readdir` of the `fuse_operations` struct.
+      - When FUSE needs to read the contents of a directory, it will call the `listDirectory` function.
+
+   c. `.read = readFile,`:
+      - This assigns the function `readFile` to the member `read` of the `fuse_operations` struct.
+      - When FUSE needs to read data from a file, it will call the `readFile` function.
+
+In summary, this code initializes a structure named `operations`, which likely contains function pointers to specific functions that handle various filesystem operations. This is a common pattern in FUSE programming, where you define custom functions to handle filesystem operations and then associate them with specific callbacks in the `fuse_operations` structure.
+
+
+
+
+
+
+MAIN FUnction:::
+`fuse_main()` is a function provided by the FUSE (Filesystem in Userspace) library that serves as the entry point for starting a FUSE-based filesystem. It is called from the `main()` function of a program that implements a FUSE filesystem.
+
+Here's the general syntax of `fuse_main()`:
+
+```c
+int fuse_main(int argc, char *argv[], const struct fuse_operations *op, void *user_data);
+```
+
+Parameters:
+- `argc`: The number of command-line arguments.
+- `argv`: An array of strings containing the command-line arguments.
+- `op`: A pointer to a `struct fuse_operations` containing function pointers for handling filesystem operations.
+- `user_data`: A pointer to user-specific data that can be passed to the filesystem operations.
+
+Return Value:
+- `fuse_main()` returns an integer indicating the exit status of the filesystem. Typically, a return value of 0 indicates successful execution, while a non-zero value indicates an error.
+
+Here's how `fuse_main()` is typically used in a FUSE filesystem program:
+
+```c
+#include <fuse.h>
+
+// Define custom functions to handle filesystem operations
+int my_getattr(const char *, struct stat *);
+int my_readdir(const char *, void *, fuse_fill_dir_t, off_t, struct fuse_file_info *);
+int my_read(const char *, char *, size_t, off_t, struct fuse_file_info *);
+
+// Initialize fuse_operations struct with custom function pointers
+static struct fuse_operations operations = {
+    .getattr = my_getattr,
+    .readdir = my_readdir,
+    .read = my_read,
+};
+
+// Main function or entry point of your FUSE filesystem program
+int main(int argc, char *argv[]) {
+    // Call FUSE library function to start filesystem
+    return fuse_main(argc, argv, &operations, NULL);
+}
+```
+
+In this example:
+
+- `fuse_main()` is called from the `main()` function, passing in the command-line arguments (`argc` and `argv`), a pointer to the `operations` struct containing function pointers for handling filesystem operations, and `NULL` for the user-specific data.
+- The `fuse_main()` function initializes the FUSE filesystem and starts handling filesystem operations according to the provided function pointers in the `operations` struct.
+- The program exits with the return value of `fuse_main()`, indicating the success or failure of the filesystem initialization and execution.
+
+Overall, `fuse_main()` is a crucial function for starting a FUSE filesystem program and is typically called from the main entry point of the program.
