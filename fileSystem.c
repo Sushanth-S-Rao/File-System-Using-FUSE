@@ -1,6 +1,6 @@
 #define FUSE_USE_VERSION 30
 
-#include<fuse.h>
+#include "fuse.h"
 #include<stdio.h>
 #include<unistd.h>
 #include<sys/types.h>
@@ -8,19 +8,30 @@
 #include<string.h>
 #include<stdlib.h>
 
+
 //
 // Function getAttributes: Gets called when system asks our FS attributes of a file
 
     // path: Path of the FILE whose attributes are required
     // st: Attributes of the FILE should be filled into this "stat" structure
 
-static int getAttributes (const char *path, struct *st) {
+struct stat {
+    int st_uid;
+    int st_gid;
+    time_t st_atime;
+    time_t st_mtime;
+    size_t st_mode;
+    int st_nlink;
+    int st_size;
+};
+
+static int getAttributes (const char *path, struct stat *st) {
 
     // GNU's definitions of Attributes: http://www.gnu.org/software/libc/manual/html_node/Attribute-Meanings.html
 
     printf("Getting the Attributes of file %s \n", path);
-    st -> st_uid = getuid();        // User ID: Owner of the FILE (user who mounted the file system)
-    st -> st_gid = getgid();        // Group ID: Owner Group of the FILE
+    st -> st_uid = getpid();        // User ID: Owner of the FILE (user who mounted the file system)
+    // st -> st_gid = getgid();        // Group ID: Owner Group of the FILE
     st -> st_atime = time(NULL);    // Last Access Time (in UNIX Time: seconds passed since 00:00:00 UTC, January 1, 1970)
     st -> st_mtime = time(NULL);    // Last Modification Time
 
@@ -49,7 +60,7 @@ static int getAttributes (const char *path, struct *st) {
     // filler: Sent by FUSE, used to fill "buffer"
         // typedef int (*fuse_fill_dir_t) (void *buf, const char *name, const struct stat *stbuf, off_t off);
 
-static int listDirectory(const char* path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
+static int (*listDirectory) (const char* path, void *buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
     printf("Getting the list of files of %s \n", path);
 
     // buf: Pointer to buffer where we want to write the entry
@@ -70,7 +81,7 @@ static int listDirectory(const char* path, void *buffer, fuse_fill_dir_t filler,
 // ----------------------
 // Function readFile: Read contents of the file
 
-static int readFile(const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
+static int (*readFile) (const char *path, char *buffer, size_t size, off_t offset, struct fuse_file_info *fi) {
 
     char file54Text[] = "Hello World From File54!";
 	char file349Text[] = "Hello World From File349!";
@@ -90,7 +101,7 @@ static int readFile(const char *path, char *buffer, size_t size, off_t offset, s
 }
 
 
-// ------
+// -----------------------------------
 // Fill the "fuse_operations" and tell FUSE about it
 
 static struct fuse_operations operations = {
